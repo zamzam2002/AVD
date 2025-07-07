@@ -6,7 +6,7 @@ saves it locally to C:\Temp, and executes it on the VM.
 # Define the local path where script will be saved
 $localScriptPath = "C:\Temp\InstallLanguagePack.ps1"
 # Define the remote GitHub/raw URL (replace with your actual URL)
-$scriptUrl = ""
+$scriptUrl = "https://raw.githubusercontent.com/zamzam2002/AVD/refs/heads/Test/Customizations.ps1"
 # Ensure the directory exists
 if (-not (Test-Path -Path "C:\Temp")) {
    New-Item -Path "C:\Temp" -ItemType Directory -Force | Out-Null
