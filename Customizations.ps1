@@ -1,46 +1,38 @@
-#######################################
-#    Install English (Australia)     #
-#######################################
-
-function Install-LanguagePack {
-
-    BEGIN {
-        $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        Write-host "Starting AVD AIB Customization: Install English (Australia): $((Get-Date).ToUniversalTime())"
-
-        # Language dictionary
-        $LanguagesDictionary = @{
-            "English (Australia)" = "en-AU"
-        }
-
-        # Disable conflicting scheduled tasks
-        Disable-ScheduledTask -TaskName "\Microsoft\Windows\LanguageComponentsInstaller\Installation" -ErrorAction SilentlyContinue
-        Disable-ScheduledTask -TaskName "\Microsoft\Windows\LanguageComponentsInstaller\ReconcileLanguageResources" -ErrorAction SilentlyContinue
-    }
-
-    PROCESS {
-        $Language = "English (Australia)"
-        $LanguageCode = $LanguagesDictionary[$Language]
-
-        for ($i = 1; $i -le 5; $i++) {
-            try {
-                Write-Host "*** Installing language pack: $LanguageCode - Attempt $i ***"
-                Install-Language -Language $LanguageCode -ErrorAction Stop
-                Write-Host "*** Successfully installed: $LanguageCode ***"
-                break
-            } catch {
-                Write-Host "*** Error installing $LanguageCode ***"
-                Write-Host $_.Exception.Message
-                Start-Sleep -Seconds 5
-            }
-        }
-    }
-
-    END {
-        Enable-ScheduledTask -TaskName "\Microsoft\Windows\LanguageComponentsInstaller\Installation" -ErrorAction SilentlyContinue
-        Enable-ScheduledTask -TaskName "\Microsoft\Windows\LanguageComponentsInstaller\ReconcileLanguageResources" -ErrorAction SilentlyContinue
-
-        $stopwatch.Stop()
-        Write-Host "Completed installation. Time taken: $($stopwatch.Elapsed)"
-    }
+<#
+.SYNOPSIS
+Downloads a PowerShell script from a remote URL to install the English (Australia) language pack,
+saves it locally to C:\Temp, and executes it on the VM.
+#>
+# Define the local path where script will be saved
+$localScriptPath = "C:\Temp\InstallLanguagePack.ps1"
+# Define the remote GitHub/raw URL (replace with your actual URL)
+$scriptUrl = ""
+# Ensure the directory exists
+if (-not (Test-Path -Path "C:\Temp")) {
+   New-Item -Path "C:\Temp" -ItemType Directory -Force | Out-Null
+}
+# Download the script from URL
+try {
+   Write-Host "Downloading language pack script from: $scriptUrl"
+   Invoke-WebRequest -Uri $scriptUrl -OutFile $localScriptPath -UseBasicParsing -ErrorAction Stop
+   Write-Host "Download complete. Saved to: $localScriptPath"
+}
+catch {
+   Write-Error "Failed to download script from $scriptUrl. Error: $_"
+   exit 1
+}
+# Execute the script locally
+if (Test-Path -Path $localScriptPath) {
+   try {
+       Write-Host "Executing the script locally..."
+       Set-TimeZone -Id "AUS Eastern Standard Time"
+   }
+   catch {
+       Write-Error "Execution of local script failed. Error: $_"
+       exit 1
+   }
+}
+else {
+   Write-Error "Local script not found at: $localScriptPath"
+   exit 1
 }
